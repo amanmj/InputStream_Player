@@ -1,7 +1,6 @@
 package com.example.amanmj.inputstream_player;
 
 import android.os.Environment;
-import android.util.Log;
 
 import com.google.android.exoplayer.C;
 import com.google.android.exoplayer.upstream.DataSpec;
@@ -12,9 +11,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+/* my custom DataSource to read myInputStream (Similar to AssetDataSource) */
 public class myDataSource implements UriDataSource {
+
     private myInputStream.GetAvailableBytes getAvailableBytes;
-    //private long getAvailableBytes;
     private String uriString;
     private myInputStream inputStream;
     private long bytesRemaining;
@@ -22,7 +22,6 @@ public class myDataSource implements UriDataSource {
 
     public myDataSource(myInputStream.GetAvailableBytes getAvailableBytes) {
         this.getAvailableBytes =getAvailableBytes;
-        Log.i("Aman", "Constructor called");
     }
 
     @Override
@@ -30,22 +29,13 @@ public class myDataSource implements UriDataSource {
     {
         try
         {
-            Log.i("Aman","uristring= "+uriString);
             uriString = dataspec.uri.toString();
-            String path = dataspec.uri.getPath();
 
             File file = new File(Environment.getExternalStorageDirectory(),uriString);
-            Log.i("Aman","length myDatasource = "+file.length());
 
             RandomAccessFile randomAccessFile=new RandomAccessFile(file,"r");
-            Log.i("Aman","length "+randomAccessFile.length());
-            //FileInputStream inputStream2=new FileInputStream(file);
             inputStream=new myInputStream(getAvailableBytes,randomAccessFile);
-            //inputStream = assetManager.open(path, AssetManager.ACCESS_RANDOM);
 
-
-            Log.i("path", path);
-            Log.i("path2", uriString);
 
             long skipped = inputStream.skip(dataspec.position);
             if (skipped < dataspec.position) {
@@ -54,10 +44,12 @@ public class myDataSource implements UriDataSource {
                 throw new EOFException();
             }
             if (dataspec.length != C.LENGTH_UNBOUNDED) {
-                bytesRemaining = dataspec.length-skipped;
-            } else {
+                bytesRemaining = dataspec.length - skipped;
+            }
+            else {
+                /*if dataspec.length==-1 then number of bytesRemaining=number of bytes file contains*/
                 bytesRemaining=file.length();
-                //bytesRemaining = inputStream.available();
+
                 if (bytesRemaining == Integer.MAX_VALUE) {
                     // assetManager.open() returns an AssetInputStream, whose available() implementation
                     // returns Integer.MAX_VALUE if the remaining length is greater than (or equal to)
@@ -72,8 +64,6 @@ public class myDataSource implements UriDataSource {
         }
 
         opened = true;
-        Log.i("Aman","bytesremaining"+String.valueOf(bytesRemaining));
-
         return bytesRemaining;
     }
 
@@ -81,15 +71,14 @@ public class myDataSource implements UriDataSource {
     public int read(byte[] buffer, int offset, int readLength)
     {
         if (bytesRemaining == 0) {
-            Log.i("Aman","read returning -1");
             return -1;
-        } else {
+        }
+        else {
             int bytesRead = 0;
             try {
                 int bytesToRead = bytesRemaining == C.LENGTH_UNBOUNDED ? readLength
                         : (int) Math.min(bytesRemaining, readLength);
                 bytesRead = inputStream.read(buffer, offset, bytesToRead);
-                //   Log.i("Aman","bytesToread="+bytesToRead+" offset= "+offset+" bytesRead= "+bytesRead+" readLength= "+readLength);
             }
             catch (IOException e)
             {

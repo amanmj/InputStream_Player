@@ -1,15 +1,12 @@
 package com.example.amanmj.inputstream_player;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 
-
+/* My custom built InputStream */
 public class myInputStream extends InputStream {
 
-    //private long getAvailableBytes;
     private final GetAvailableBytes getAvailableBytes;
     private final RandomAccessFile randomAccessFile;
 
@@ -21,67 +18,65 @@ public class myInputStream extends InputStream {
     @Override
     public int available() throws IOException
     {
-        long n = getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
+        /*calculate number of bytes that can be read from myInputStream without blocking it */
+        long numberOfBytesCanBeRead = getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
 
-        while(n<=0)
+        /*keep running loop until we get a non-zero value of numberOfBytesCanBeRead*/
+        while(numberOfBytesCanBeRead <= 0)
         {
-            Log.i("Aman", "sleeping available method");
             try {
+                /*sleep for 4 seconds*/
                 Thread.sleep(4000L);
             } catch (InterruptedException e) {
-
                 e.printStackTrace();
                 return -1;
             }
-            n = this.getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
-
+            numberOfBytesCanBeRead = this.getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
         }
-        //Log.i("Aman","available method finished");
-        Log.i("Aman","avaiable = "+n);
-        return (int) n;
-
+        return (int) numberOfBytesCanBeRead;
     }
 
     @Override
     public void close() throws IOException {
         randomAccessFile.close();
         super.close();
-        Log.i("Aman","closed");
     }
 
     @Override
     public int read() throws IOException {
-        throw new IOException("fuck off");
+        throw new IOException("Illegal To Enter Here");
     }
 
     @Override
     public int read(byte[] buffer) throws IOException {
-        throw new IOException("fuck off");
+        throw new IOException("Illegal To Enter Here");
     }
 
     @Override
     public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
 
-        int available = available();
+        int availableBytes = available();
 
-        if(available==-1)
-        {
+        if(availableBytes==-1) {
             return -1;
         }
 
-        int cnt = (available < byteCount) ? available : byteCount;
-        int x= randomAccessFile.read(buffer, byteOffset, cnt);
-        Log.i("Aman","read= "+x);
-        return x;
+        int cnt = (availableBytes < byteCount) ? availableBytes : byteCount;
+
+        /*read from randomAccessFile*/
+        return randomAccessFile.read(buffer, byteOffset, cnt);
     }
 
+    /*method to skip bytes in a the myInputStream*/
     @Override
     public long skip(long byteCount) throws IOException {
-        if(byteCount<=0)
+        if(byteCount <= 0)
             return 0;
-        long available = this.getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
-        while(available < byteCount) {
-            Log.i("Aman","sleeping skip");
+
+        long availableBytes = this.getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
+
+        /*keep running loop until we get the appropriate availableBytes so that we can read from the position to which we skipped*/
+        while(availableBytes < byteCount) {
             try {
                 Thread.sleep(4000L);
             }
@@ -89,16 +84,16 @@ public class myInputStream extends InputStream {
                 e.printStackTrace();
                 return -1;
             }
-            available=this.getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
+            availableBytes=this.getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
         }
 
-        long skipped = (available < byteCount) ? available : byteCount;
-        Log.i("Aman","skipped="+skipped);
-        int x=randomAccessFile.skipBytes((int)skipped);
-        Log.i("Aman","skipBytes in file= "+x);
-        return x;
+        long skipped = (availableBytes < byteCount) ? availableBytes : byteCount;
+
+        /*return number of bytes skipped*/
+        return randomAccessFile.skipBytes( (int)skipped );
     }
 
+    /*an interface that gives us number of available bytes that we are increasing from a new thread in MainActivity*/
     public interface GetAvailableBytes {
         long getAvailableBytes();
     }
