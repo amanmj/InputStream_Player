@@ -21,7 +21,7 @@ public class myDataSource implements UriDataSource {
     private boolean opened;
 
     public myDataSource(myInputStream.GetAvailableBytes getAvailableBytes) {
-        this.getAvailableBytes =getAvailableBytes;
+        this.getAvailableBytes = getAvailableBytes;
     }
 
     @Override

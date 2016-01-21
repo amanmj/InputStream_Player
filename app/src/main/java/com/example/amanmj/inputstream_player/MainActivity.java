@@ -4,7 +4,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,10 +25,11 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
     private ExoPlayer exoPlayer;
     private int rendererCount;
     private File file;
-    private TextView textView,textView5,textView4;
+    private TextView textView,speed,textView5,textView4;
     private long song_duration;
+    private Button inc,dec;   /*to increase/decrease the number of bytes available per second*/
     private int BUFFER_BYTES;  /* equals number of kilo bytes to read per second from file*/
-    private AtomicLong avaialableBytes; //atomicLong used because it's Thread safe
+    private AtomicLong availableBytes; //atomicLong used because it's Thread safe
     private SeekBar seekBar;
 
     @Override
@@ -43,12 +46,16 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
         textView=(TextView)findViewById(R.id.textView3);
         textView4=(TextView)findViewById(R.id.textView4);
         textView5=(TextView)findViewById(R.id.textView5);
+        speed=(TextView)findViewById(R.id.speed);
         seekBar=(SeekBar)findViewById(R.id.seekBar);
+        inc=(Button)findViewById(R.id.inc);
+        dec=(Button)findViewById(R.id.dec);
+
 
 
 
         /*initialise number of available bytes for the inputstream to read = 100 */
-        avaialableBytes=new AtomicLong(100);
+        availableBytes=new AtomicLong(100);
 
         exoPlayer= ExoPlayer.Factory.newInstance(rendererCount);
 
@@ -79,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
         /*start a new Thread that will determine the buffering speed of the song.
         available bytes will increase by BUFFER_BYTES*1024 after each second thus providing a buffering of
         "BUFFER_BYTES" KBPS
-        The bytes will enter myInputStream from "song.mp3" at a rate of BYFFER_BYTES KBPS.
+        The bytes will enter myInputStream from "song.mp3" at a rate of BUFFER_BYTES KBPS.
          */
         new Thread(updateAvailableBytes).start();
 
@@ -107,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
          */
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            public void onProgressChanged(SeekBar seekBar,int progress, boolean fromUser) {
                 if (fromUser==true) {
                     exoPlayer.seekTo(progress);
                 }
@@ -117,16 +124,35 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
+        /*listener to increase number of available bytes per second*/
+        inc.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BUFFER_BYTES++;
+            }
+        });
+
+        /*listener to decrease number of available bytes per second*/
+        dec.setOnClickListener(new Button.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                if(BUFFER_BYTES==1)
+                    Toast.makeText(getApplicationContext(),"MINIMUM AVAILABLE BYTES HAS TO BE 1",Toast.LENGTH_SHORT).show();
+                else
+                    BUFFER_BYTES--;
+            }
+        });
     }
 
     /*Override method in getAvailableBytes Interface in MyInputStream*/
     @Override
     public long getAvailableBytes() {
         /*a check to handle if available bytes exceed the total bytes in file*/
-        if(avaialableBytes.get() > file.length())
+        if(availableBytes.get() > file.length())
             return file.length();
         else
-            return avaialableBytes.get();
+            return availableBytes.get();
     }
     Runnable updateAvailableBytes = new Runnable() {
 
@@ -139,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
             while(true)
             {
                 try {
-                    avaialableBytes.addAndGet(BUFFER_BYTES*1024);
+                    availableBytes.addAndGet(BUFFER_BYTES*1024);
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -158,14 +184,15 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if(exoPlayer.getDuration()>0) {
+                            if(exoPlayer.getDuration()>0)
+                            {
                                 seekBar.setProgress((int) exoPlayer.getCurrentPosition());
 
                                 long currentPos=exoPlayer.getCurrentPosition()*file.length()/exoPlayer.getDuration();
                                 textView4.setText("Number of bytes to be read up till here = " + currentPos);
-                                textView.setText("         Number of bytes read up till here = "+avaialableBytes.get());
-
-                                if(avaialableBytes.get()+150000>currentPos)
+                                textView.setText("         Number of bytes read up till here = "+availableBytes.get());
+                                speed.setText(BUFFER_BYTES+" KBPS");
+                                if(availableBytes.get()-currentPos>100000)
                                     textView5.setText("PLAYING");
                                 else
                                     textView5.setText("READING BYTES");
