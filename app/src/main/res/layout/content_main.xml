@@ -83,27 +83,23 @@
         android:layout_height="wrap_content"
         android:text="+"
         android:id="@+id/inc"
-        android:layout_marginLeft="90dp"
-        android:layout_marginStart="90dp"
-        android:layout_marginTop="58dp"
+        android:layout_marginTop="39dp"
         android:layout_below="@+id/textView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignRight="@+id/speed"
+        android:layout_alignEnd="@+id/speed" />
 
     <TextView
-        android:layout_width="70dp"
-        android:layout_height="30dp"
+        android:layout_width="60dp"
+        android:layout_height="35dp"
         android:text="20 KBPS"
         android:id="@+id/speed"
-        android:layout_marginLeft="43dp"
-        android:layout_marginStart="43dp"
         android:textStyle="bold"
         android:textColor="#ffffff"
         android:background="#000000"
+        android:textAlignment="center"
         android:layout_below="@+id/inc"
-        android:layout_toRightOf="@+id/inc"
-        android:layout_toEndOf="@+id/inc"
-        android:textAlignment="center" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -120,13 +116,22 @@
         android:layout_height="30dp"
         android:text="Increase Availalbe Bytes"
         android:id="@+id/textView6"
-        android:layout_below="@+id/textView"
-        android:layout_toStartOf="@+id/speed"
-        android:layout_marginTop="26dp"
         android:textAlignment="center"
         android:textSize="20dp"
-        android:layout_alignRight="@+id/speed"
-        android:layout_alignEnd="@+id/speed"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:layout_below="@+id/dec"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TEMP"
+        android:id="@+id/temp"
+        android:layout_above="@+id/speed"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="75dp"
+        android:layout_marginEnd="75dp" />
 
 </RelativeLayout>

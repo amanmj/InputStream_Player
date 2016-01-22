@@ -23,11 +23,14 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class MainActivity extends AppCompatActivity implements myInputStream.GetAvailableBytes {
     private ExoPlayer exoPlayer;
+    private DataSource dataSource;
+    private TrackRenderer audio;
+    private ExtractorSampleSource extractorSampleSource;
     private int rendererCount;
     private File file;
     private TextView textView,speed,textView5,textView4;
     private long song_duration;
-    private Button inc,dec;   /*to increase/decrease the number of bytes available per second*/
+    private Button inc,dec,temp;   /*to increase/decrease the number of bytes available per second*/
     private int BUFFER_BYTES;  /* equals number of kilo bytes to read per second from file*/
     private AtomicLong availableBytes; //atomicLong used because it's Thread safe
     private SeekBar seekBar;
@@ -50,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
         seekBar=(SeekBar)findViewById(R.id.seekBar);
         inc=(Button)findViewById(R.id.inc);
         dec=(Button)findViewById(R.id.dec);
-
+        temp=(Button)findViewById(R.id.temp);
 
 
 
@@ -73,10 +76,10 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
         }
 
         /*instantiate myDataSource*/
-        DataSource dataSource=new myDataSource(this);
+        dataSource=new myDataSource(this);
 
-        ExtractorSampleSource extractorSampleSource=new ExtractorSampleSource(Uri.parse("song.mp3"),dataSource,new DefaultAllocator(64*1024),64*1024*256);
-        TrackRenderer audio=new MediaCodecAudioTrackRenderer(extractorSampleSource,null,true);
+        extractorSampleSource=new ExtractorSampleSource(Uri.parse("song.mp3"),dataSource,new DefaultAllocator(64*1024),64*1024*256);
+        audio=new MediaCodecAudioTrackRenderer(extractorSampleSource,null,true);
 
         /*prepare ExoPlayer*/
         exoPlayer.prepare(audio);
@@ -124,11 +127,12 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
+
         /*listener to increase number of available bytes per second*/
         inc.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
-                BUFFER_BYTES++;
+                BUFFER_BYTES+=5;
             }
         });
 
@@ -137,10 +141,24 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
 
             @Override
             public void onClick(View v) {
-                if(BUFFER_BYTES==1)
-                    Toast.makeText(getApplicationContext(),"MINIMUM AVAILABLE BYTES HAS TO BE 1",Toast.LENGTH_SHORT).show();
+                if(BUFFER_BYTES==5)
+                    Toast.makeText(getApplicationContext(),"AVAILABLE BYTES CANNOT BE ZERO",Toast.LENGTH_LONG).show();
                 else
-                    BUFFER_BYTES--;
+                    BUFFER_BYTES-=5;
+            }
+        });
+
+
+        /*A temp button created in order to start exoplayer again if it throws exception when bytes are unavailable
+         to be read
+          */
+        temp.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                extractorSampleSource=new ExtractorSampleSource(Uri.parse("song.mp3"),dataSource,new DefaultAllocator(64*1024),64*1024*256);
+                audio=new MediaCodecAudioTrackRenderer(extractorSampleSource,null,true);
+                exoPlayer.prepare(audio);
+                exoPlayer.setPlayWhenReady(true);
             }
         });
     }
@@ -192,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
                                 textView4.setText("Number of bytes to be read up till here = " + currentPos);
                                 textView.setText("         Number of bytes read up till here = "+availableBytes.get());
                                 speed.setText(BUFFER_BYTES+" KBPS");
-                                if(availableBytes.get()-currentPos>100000)
+                                if(availableBytes.get()-currentPos>150000)
                                     textView5.setText("PLAYING");
                                 else
                                     textView5.setText("READING BYTES");
