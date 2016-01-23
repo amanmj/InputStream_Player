@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
         if(availableBytes.get() > file.length())
             return file.length();
         else
-            return file.length();
+            return availableBytes.get();
     }
     Runnable updateAvailableBytes = new Runnable() {
 

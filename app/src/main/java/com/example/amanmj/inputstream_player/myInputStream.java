@@ -20,6 +20,7 @@ public class myInputStream extends InputStream {
     {
         if(numberOfBytesCanBeRead > 0)
             return (int) numberOfBytesCanBeRead;
+
         /*calculate number of bytes that can be read from myInputStream without blocking it */
 
         numberOfBytesCanBeRead = getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
@@ -89,7 +90,7 @@ public class myInputStream extends InputStream {
 
         /*return number of bytes skipped*/
         int actualSkipped = randomAccessFile.skipBytes( (int)skipped );
-        numberOfBytesCanBeRead-=actualSkipped;
+        numberOfBytesCanBeRead -= actualSkipped;
         return actualSkipped;
     }
 
