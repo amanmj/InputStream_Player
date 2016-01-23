@@ -1,12 +1,14 @@
 package com.example.amanmj.inputstream_player;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 
 /* My custom built InputStream */
 public class myInputStream extends InputStream {
-
+    private long numberOfBytesCanBeRead = 0;
     private final GetAvailableBytes getAvailableBytes;
     private final RandomAccessFile randomAccessFile;
 
@@ -18,11 +20,18 @@ public class myInputStream extends InputStream {
     @Override
     public int available() throws IOException
     {
+        if(numberOfBytesCanBeRead > 0)
+            return (int) numberOfBytesCanBeRead;
         /*calculate number of bytes that can be read from myInputStream without blocking it */
-        long numberOfBytesCanBeRead = getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
+
+        numberOfBytesCanBeRead = getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
+
+        /*if bytes are not available return -1 */
+        if(numberOfBytesCanBeRead < 0)
+            return -1;
 
         /*keep running loop until we get a non-zero value of numberOfBytesCanBeRead*/
-        while(numberOfBytesCanBeRead <= 0)
+        while(numberOfBytesCanBeRead == 0)
         {
             try {
                 /*sleep for 4 seconds*/
@@ -57,40 +66,33 @@ public class myInputStream extends InputStream {
 
         int availableBytes = available();
 
-        if(availableBytes==-1) {
+        if(availableBytes < 0) {
             return -1;
         }
 
         int cnt = (availableBytes < byteCount) ? availableBytes : byteCount;
 
         /*read from randomAccessFile*/
-        return randomAccessFile.read(buffer, byteOffset, cnt);
+
+        int read = randomAccessFile.read(buffer, byteOffset, cnt);
+        numberOfBytesCanBeRead -= read;
+        return read;
     }
 
     /*method to skip bytes in a the myInputStream*/
     @Override
     public long skip(long byteCount) throws IOException {
-        if(byteCount <= 0)
-            return 0;
+        if(byteCount < 0)
+            return -1;
 
-        long availableBytes = this.getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
-
-        /*keep running loop until we get the appropriate availableBytes so that we can read from the position to which we skipped*/
-        while(availableBytes < byteCount) {
-            try {
-                Thread.sleep(4000L);
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-                return -1;
-            }
-            availableBytes=this.getAvailableBytes.getAvailableBytes()-randomAccessFile.getFilePointer();
-        }
+        long availableBytes = available();
 
         long skipped = (availableBytes < byteCount) ? availableBytes : byteCount;
 
         /*return number of bytes skipped*/
-        return randomAccessFile.skipBytes( (int)skipped );
+        int actualSkipped = randomAccessFile.skipBytes( (int)skipped );
+        numberOfBytesCanBeRead-=actualSkipped;
+        return actualSkipped;
     }
 
     /*an interface that gives us number of available bytes that we are increasing from a new thread in MainActivity*/

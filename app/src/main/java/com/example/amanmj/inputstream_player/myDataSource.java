@@ -30,7 +30,6 @@ public class myDataSource implements UriDataSource {
     {
         try
         {
-            Log.i("Aman", "open");
             uriString = dataspec.uri.toString();
 
             File file = new File(Environment.getExternalStorageDirectory(),uriString);
