@@ -114,7 +114,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="30dp"
-        android:text="Increase Availalbe Bytes"
+        android:text="Increase Available Bytes"
         android:id="@+id/textView6"
         android:textAlignment="center"
         android:textSize="20dp"

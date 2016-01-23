@@ -1,6 +1,7 @@
 package com.example.amanmj.inputstream_player;
 
 import android.os.Environment;
+import android.util.Log;
 
 import com.google.android.exoplayer.C;
 import com.google.android.exoplayer.upstream.DataSpec;
@@ -29,6 +30,7 @@ public class myDataSource implements UriDataSource {
     {
         try
         {
+            Log.i("Aman", "open");
             uriString = dataspec.uri.toString();
 
             File file = new File(Environment.getExternalStorageDirectory(),uriString);
