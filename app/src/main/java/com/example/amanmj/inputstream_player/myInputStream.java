@@ -6,7 +6,10 @@ import java.io.RandomAccessFile;
 
 /* My custom built InputStream */
 public class myInputStream extends InputStream {
+
+    /*keeping track of bytesRead so that we have to call getAvailableBytes() whenever bytesRead is <= 0 */
     private long numberOfBytesCanBeRead = 0;
+
     private final GetAvailableBytes getAvailableBytes;
     private final RandomAccessFile randomAccessFile;
 

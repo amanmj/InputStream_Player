@@ -62,26 +62,12 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
         availableBytes=new AtomicLong(100);
 
         exoPlayer= ExoPlayer.Factory.newInstance(rendererCount);
-        exoPlayer.addListener(new ExoPlayer.Listener() {
-            @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-            }
-
-            @Override
-            public void onPlayWhenReadyCommitted() {
-
-            }
-
-            @Override
-            public void onPlayerError(ExoPlaybackException error) {
-            }
-        });
 
         /*check if file is present or not*/
         try
         {
             /* location of file in the root directory of SD Card named "song.mp3" */
-            file=new File(Environment.getExternalStorageDirectory(),"temp_song");
+            file=new File(Environment.getExternalStorageDirectory(),"song.mp3");
         }
         catch(Exception e)
         {
@@ -93,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements myInputStream.Get
         /*instantiate myDataSource*/
         dataSource=new myDataSource(this);
 
-        extractorSampleSource=new ExtractorSampleSource(Uri.parse("temp_song"),dataSource,new DefaultAllocator(64*1024),64*1024*256);
+        extractorSampleSource=new ExtractorSampleSource(Uri.parse("song.mp3"),dataSource,new DefaultAllocator(64*1024),64*1024*256);
         audio=new MediaCodecAudioTrackRenderer(extractorSampleSource,null,true);
 
         /*prepare ExoPlayer*/
